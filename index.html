@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Instruções - CPRAIO</title>
+    <style>
+        :root {
+            --primary-bg: #1e1e24;
+            --secondary-bg: #2b2b36;
+            --accent-color: #fca311; /* Laranja */
+            --text-light: #e0e0e0;
+            --text-dark: #14213d;
+            --success: #2a9d8f; /* Verde */
+            --danger: #e63946;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .panel {
+            background-color: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            align-items: end; 
+            margin-bottom: 15px;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            position: relative; /* Necessário para o autocomplete customizado */
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #aaa;
+            line-height: 1.2;
+        }
+
+        input, select {
+            width: 100%;
+            height: 42px; 
+            padding: 8px 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: white;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.95em;
+        }
+
+        /* Estilos da Caixa de Pesquisa Customizada */
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #444;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #2b2b36;
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: 0 0 6px 6px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            display: none; /* Oculto por padrão */
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #444;
+        }
+
+        .cor-verde { color: var(--success) !important; }
+        .cor-laranja { color: var(--accent-color) !important; }
+
+        button {
+            background-color: var(--accent-color);
+            color: var(--text-dark);
+            border: none;
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #e59400;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .stats-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            flex: 1;
+            min-width: 150px;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            min-width: 700px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        th {
+            background-color: #222;
+            color: var(--accent-color);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .bg-success { background-color: rgba(42, 157, 143, 0.2); color: var(--success); }
+        .bg-danger { background-color: rgba(230, 57, 70, 0.2); color: var(--danger); }
+
+        .delete-btn {
+            background-color: var(--danger);
+            color: white;
+            padding: 6px 12px;
+            font-size: 0.8em;
+            margin-top: 0;
+            width: auto;
+        }
+
+        .delete-btn:hover { background-color: #c5303c; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Controle de Instrução - CPRAIO</h1>
+        <p>Painel de Gestão de Instrutores e Carga Horária</p>
+    </header>
+
+    <div class="panel">
+        <h3>Lançar / Atualizar Instrução</h3>
+        <p style="font-size: 0.85em; color: #aaa; margin-top: -10px;">Para indicar que um instrutor ainda não deu aula no mês, cadastre-o com 0 horas realizadas.</p>
+        <form id="instrucaoForm" autocomplete="off">
+            <div class="form-group">
+                <div class="input-box">
+                    <label>Nome do Instrutor</label>
+                    <input type="text" id="nomeGuerra" required placeholder="Clique ou digite para pesquisar...">
+                    <div id="autocomplete-list" class="autocomplete-items"></div>
+                </div>
+                <div class="input-box">
+                    <label>Disciplina / Função</label>
+                    <select id="disciplina" required>
+                        <option value="" disabled selected>Selecione a disciplina...</option>
+                        <option value="PILOTAGEM TÁTICA COM MOTOCICLETAS I">Pilotagem Tática com Motocicletas I</option>
+                        <option value="PILOTAGEM TÁTICA COM MOTOCICLETAS II">Pilotagem Tática com Motocicletas II</option>
+                        <option value="TÉCNICAS POLICIAIS ESPECIAIS I">Técnicas Policiais Especiais I</option>
+                        <option value="TÉCNICAS POLICIAIS ESPECIAIS II">Técnicas Policiais Especiais II</option>
+                        <option value="DEFESA PESSOAL">Defesa Pessoal</option>
+                        <option value="TIRO POLICIAL DEFENSIVO I">Tiro Policial Defensivo I</option>
+                        <option value="TIRO POLICIAL DEFENSIVO II">Tiro Policial Defensivo II</option>
+                        <option value="ESCOLTA E BATEDOR">Escolta e Batedor</option>
+                        <option value="TÁTICO MÓVEL">Tático Móvel</option>
+                        <option value="APH TÁTICO">APH Tático</option>
+                        <option value="COORDENADOR">Coordenador</option>
+                        <option value="MONITOR">Monitor</option>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <label>Mês</label>
+                    <select id="mes" required>
+                        <option value="Janeiro">Janeiro</option>
+                        <option value="Fevereiro">Fevereiro</option>
+                        <option value="Março">Março</option>
+                        <option value="Abril">Abril</option>
+                        <option value="Maio">Maio</option>
+                        <option value="Junho">Junho</option>
+                        <option value="Julho">Julho</option>
+                        <option value="Agosto">Agosto</option>
+                        <option value="Setembro">Setembro</option>
+                        <option value="Outubro">Outubro</option>
+                        <option value="Novembro">Novembro</option>
+                        <option value="Dezembro">Dezembro</option>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <label>Horas Realizadas</label>
+                    <input type="number" id="horasRealizadas" required min="0" placeholder="Ex: 10">
+                </div>
+            </div>
+            <button type="submit">Salvar Registro</button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <div class="dashboard-header">
+            <h3>Relatório Mensal</h3>
+            <div>
+                <label style="display:inline-block; margin-right: 10px; color: white;">Filtrar Mês:</label>
+                <select id="filtroMes" onchange="atualizarDashboard()" style="width: auto; display: inline-block; height: 35px;">
+                    <option value="Todos">Todos os Meses</option>
+                    <option value="Janeiro">Janeiro</option>
+                    <option value="Fevereiro">Fevereiro</option>
+                    <option value="Março">Março</option>
+                    <option value="Abril">Abril</option>
+                    <option value="Maio">Maio</option>
+                    <option value="Junho">Junho</option>
+                    <option value="Julho">Julho</option>
+                    <option value="Agosto">Agosto</option>
+                    <option value="Setembro">Setembro</option>
+                    <option value="Outubro">Outubro</option>
+                    <option value="Novembro">Novembro</option>
+                    <option value="Dezembro">Dezembro</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats-cards">
+            <div class="card">
+                <h3>Total Horas/Aula Mês</h3>
+                <p id="cardTotalHoras">0h</p>
+            </div>
+            <div class="card">
+                <h3>Instrutores Ativos</h3>
+                <p id="cardAtivos" style="color: var(--success);">0</p>
+            </div>
+            <div class="card">
+                <h3>Pendentes (0h)</h3>
+                <p id="cardPendentes" style="color: var(--danger);">0</p>
+            </div>
+        </div>
+
+        <h4>Tabela de Instrutores</h4>
+        <div class="table-responsive">
+            <table id="tabelaInstrutores">
+                <thead>
+                    <tr>
+                        <th>Nome de Guerra</th>
+                        <th>Disciplina</th>
+                        <th>Mês</th>
+                        <th>Horas Realizadas</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let registros = JSON.parse(localStorage.getItem('cpraio_instrucoes')) || [];
+
+    // Lista Completa de Instrutores
+    const instrutores = [
+        "Abraão Henrique Salgado Rosal", "Adriano Barreto de Lima", "Alexsandro Carvalho Santiago", "Alexsandro Queiroz dos Santos",
+        "Alirio Nogueira Costa Junior", "Anderson Saraiva da Silva", "André Luís Vasconcelos do Nascimento Silva", "Antônio Carlos Galdino da Silva",
+        "Antônio Elson Da Costa Lemos", "Antônio Joseci Pinheiro Junior", "Antonio José de Souza Lima", "Arlindo Nascimento de Oliveira",
+        "Arthur Araújo dos Santos", "Atila Pinto Bastos", "Boanerges Texeira Almeida", "Bruno Allef Carvalho Nascimento", "Bruno Bezerra Guilherme",
+        "Carlos Anderson Silva do Nascimento", "Cleberson Aragão Farias", "Clemilton Rocha Pinto", "Diego Nunes Barros", "Edivano Melo de MENEZES",
+        "Egilson Ribeiro Da Costa Queiroga", "Emiliano Sousa Leite", "Everaldo Ferreira da Rocha", "Evilázio Félix da Silva", "Fabiano Barbosa Santos",
+        "Fabio Araújo Mourão", "Felipe Leonni Alves de Paula Flor", "Fernando Carlos Ferreira", "Fernando César de Albuquerque Cabral",
+        "Francisco ALAN de Souza Araujo", "Francisco Carlos De Sousa Alcantara", "Francisco Cleiton Lima De Sousa", "Francisco Das Chagas Moura Do Nascimento",
+        "Francisco Das Chagas Nunes Rodrigues", "Francisco Gilson Da Silva Ferreira", "Francisco Michelson Barbosa de Sousa", "Francisco Wanderson Teixeira Celestino",
+        "Gerardo de Sousa Maia Filho", "Gevásio Paulo da Silva", "Gleidystone Bertoleza de Carvalho", "Guilherme Dos Santos Melo", "Hudson José Santos De Sousa",
+        "Jeann Paulo de Araújo Alcântara", "Jesus Jairo Barbosa De Castro", "João Alexandre HELCIAS Teixeira", "João Victor Barros Maciel", "Joel Justino Alves",
+        "Joelson Leandro Chagas Ferreira", "Jorge Marques Silva Cavalcante", "José Alberlânio Ferreira Lopes", "José EDIKELSON Chaves de Araújo",
+        "José Rogério Oliveira Maciel", "Jose Wellington Soares da Costa", "Jose Wilfred Andrade Alcoforado Filho", "Leandro Salazar Vasconcelos",
+        "Lincoln Barbosa Santos", "Lucas Victor Lira Costa", "Lucivando Ferreira de Sousa", "Luiz Luzimar da Silva Filho", "Luiz Paulo Alves da Silva",
+        "Luiz Rogério De Lima Sousa", "Luiz Virgílio Tabosa Neto", "Marcio Franklin Lima dos Reis", "Osvalnildo Zacarias Pereira", "Patrik Mabel Chagas Da Silva",
+        "Paulo Henrique Félix De Castro", "Paulo Maurício Louro Pontes", "Robson Bulcão Pires", "Robson Paz Felix", "Rocivanio Klebson Soares Lemos",
+        "Rondinelli Galvão Alixandre", "Taironny Freitas Barbosa", "Tiago De Sousa Cavalcante", "Tiago França Aragão", "Ulisses Moreira de Menezes Junior",
+        "Vagner Avelino da Silva", "Vitor Oliveira Pereira", "Washington Luiz Gomes Dos Santos", "Wdemberg Freire Machado", "Wellington Alves de Oliveira"
+    ];
+
+    window.onload = function() {
+        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const mesAtual = meses[new Date().getMonth()];
+        document.getElementById('mes').value = mesAtual;
+        document.getElementById('filtroMes').value = mesAtual;
+        atualizarDashboard();
+    };
+
+    // --- Lógica do Autocomplete de Nomes ---
+    const inputNome = document.getElementById('nomeGuerra');
+    const autocompleteList = document.getElementById('autocomplete-list');
+    const selectMes = document.getElementById('mes');
+
+    // Calcula as horas totais do instrutor no mês selecionado
+    function calcularHorasMes(nomeInstrutor, mesFormulario) {
+        const nomeUpper = nomeInstrutor.toUpperCase();
+        return registros
+            .filter(r => r.nomeGuerra === nomeUpper && r.mes === mesFormulario)
+            .reduce((total, r) => total + r.horasRealizadas, 0);
+    }
+
+    function renderizarLista(filtro = '') {
+        autocompleteList.innerHTML = '';
+        const mesSelecionado = selectMes.value;
+        let achou = false;
+
+        instrutores.forEach(nome => {
+            if (nome.toLowerCase().includes(filtro.toLowerCase())) {
+                achou = true;
+                const horas = calcularHorasMes(nome, mesSelecionado);
+                const item = document.createElement('div');
+                
+                // Formatação do nome + carga horária atual no mês
+                item.innerHTML = `${nome} <span style="float:right; font-size:0.8em; color:#888;">(${horas}h)</span>`;
+                
+                // Aplica as cores conforme a regra
+                if (horas >= 40) {
+                    item.classList.add('cor-verde');
+                } else if (horas === 0) {
+                    item.classList.add('cor-laranja');
+                }
+
+                item.addEventListener('click', function() {
+                    inputNome.value = nome;
+                    autocompleteList.style.display = 'none';
+                });
+                autocompleteList.appendChild(item);
+            }
+        });
+
+        if (achou) {
+            autocompleteList.style.display = 'block';
+        } else {
+            autocompleteList.style.display = 'none';
+        }
+    }
+
+    // Exibe lista ao clicar ou digitar
+    inputNome.addEventListener('input', function() { renderizarLista(this.value); });
+    inputNome.addEventListener('focus', function() { renderizarLista(this.value); });
+
+    // Atualiza as cores da lista se o usuário trocar o mês no formulário enquanto digita
+    selectMes.addEventListener('change', function() {
+        if (autocompleteList.style.display === 'block') {
+            renderizarLista(inputNome.value);
+        }
+    });
+
+    // Oculta lista se clicar fora
+    document.addEventListener('click', function(e) {
+        if (e.target !== inputNome && e.target !== autocompleteList) {
+            autocompleteList.style.display = 'none';
+        }
+    });
+
+    // --- Lógica Principal do Sistema ---
+    document.getElementById('instrucaoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const nomeGuerra = document.getElementById('nomeGuerra').value.toUpperCase();
+        const disciplina = document.getElementById('disciplina').value.toUpperCase();
+        const mes = document.getElementById('mes').value;
+        const horasRealizadas = parseFloat(document.getElementById('horasRealizadas').value);
+
+        // Validação básica se o nome está na lista
+        if (!instrutores.some(i => i.toUpperCase() === nomeGuerra)) {
+            alert("Por favor, selecione um nome válido na lista de instrutores.");
+            return;
+        }
+
+        const indexExistente = registros.findIndex(r => r.nomeGuerra === nomeGuerra && r.disciplina === disciplina && r.mes === mes);
+
+        if(indexExistente >= 0) {
+            registros[indexExistente].horasRealizadas = horasRealizadas;
+        } else {
+            registros.push({
+                id: Date.now(),
+                nomeGuerra,
+                disciplina,
+                mes,
+                horasRealizadas
+            });
+        }
+
+        salvarDados();
+        
+        document.getElementById('nomeGuerra').value = '';
+        document.getElementById('horasRealizadas').value = '';
+        
+        atualizarDashboard();
+    });
+
+    function salvarDados() {
+        localStorage.setItem('cpraio_instrucoes', JSON.stringify(registros));
+    }
+
+    function deletarRegistro(id) {
+        if(confirm("Tem certeza que deseja apagar este registro?")) {
+            registros = registros.filter(r => r.id !== id);
+            salvarDados();
+            atualizarDashboard();
+        }
+    }
+
+    function atualizarDashboard() {
+        const filtroMes = document.getElementById('filtroMes').value;
+        const tbody = document.querySelector('#tabelaInstrutores tbody');
+        tbody.innerHTML = '';
+
+        let registrosFiltrados = registros;
+        if (filtroMes !== 'Todos') {
+            registrosFiltrados = registros.filter(r => r.mes === filtroMes);
+        }
+
+        let totalHoras = 0;
+        let instrutoresAtivos = 0;
+        let instrutoresPendentes = 0;
+
+        registrosFiltrados.forEach(reg => {
+            let statusBadge = '';
+            
+            if (reg.horasRealizadas > 0) {
+                statusBadge = `<span class="status-badge bg-success">Instruiu</span>`;
+                instrutoresAtivos++;
+                totalHoras += reg.horasRealizadas;
+            } else {
+                statusBadge = `<span class="status-badge bg-danger">Pendente</span>`;
+                instrutoresPendentes++;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${reg.nomeGuerra}</strong></td>
+                <td>${reg.disciplina}</td>
+                <td>${reg.mes}</td>
+                <td>${reg.horasRealizadas}h</td>
+                <td>${statusBadge}</td>
+                <td><button class="delete-btn" onclick="deletarRegistro(${reg.id})">Excluir</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('cardTotalHoras').textContent = totalHoras + 'h';
+        document.getElementById('cardAtivos').textContent = instrutoresAtivos;
+        document.getElementById('cardPendentes').textContent = instrutoresPendentes;
+    }
+</script>
+
+</body>
+</html>
